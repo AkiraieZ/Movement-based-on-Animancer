@@ -1,16 +1,18 @@
 /*
- ×÷Îª×´Ì¬»ùÀà£¬¹æ¶¨ËùÓĞ×´Ì¬ÀàÒª×öµÄÊÂÇé
+ ä½œä¸ºçŠ¶æ€åŸºç±»ï¼Œè§„å®šæ‰€æœ‰çŠ¶æ€ç±»è¦åšçš„äº‹æƒ…
  */
 using Animancer;
+using UnityEngine;
 
 public abstract class CharacterBaseState
 {
     protected readonly CharacterStateMachine _stateMachine;
-    protected readonly AnimancerComponent _animancer;//Animancer×é¼ş
-    protected readonly StateData _stateData;//¸ùÔË¶¯Êı¾İ
+    protected readonly AnimancerComponent _animancer;//Animancerç»„ä»¶
+    protected readonly StateData _stateData;//æ ¹è¿åŠ¨æ•°æ®
 
-    protected AnimancerState _currentAnimancerState;//»º´æµ±Ç°²¥·ÅµÄ¶¯»­×´Ì¬
-    //ÓĞ²Î¹¹Ôìº¯Êı£¬±»×ÓÀàµ÷ÓÃ³õÊ¼»¯
+    protected AnimancerState _currentAnimancerState;//ç¼“å­˜å½“å‰æ’­æ”¾çš„åŠ¨ç”»çŠ¶æ€
+
+    //æœ‰å‚æ„é€ å‡½æ•°ï¼Œè¢«å­ç±»è°ƒç”¨åˆå§‹åŒ–
     protected CharacterBaseState(CharacterStateMachine stateMachine, AnimancerComponent animancer,StateData stateData)
     {
         _stateMachine = stateMachine;
@@ -19,19 +21,19 @@ public abstract class CharacterBaseState
     }
 
     /// <summary>
-    /// ¹æ¶¨×´Ì¬½øÈëÊ±µÄĞĞÎª£¬µ÷ÓÃÒ»´Î
+    /// è§„å®šçŠ¶æ€è¿›å…¥æ—¶çš„è¡Œä¸ºï¼Œè°ƒç”¨ä¸€æ¬¡
     /// </summary>
     public abstract void Enter();
 
     /// <summary>
-    /// ¹æ¶¨×´Ì¬½øĞĞÊ±µÄĞĞÎª£¬Ã¿Ö¡µ÷ÓÃ
+    /// è§„å®šçŠ¶æ€è¿›è¡Œæ—¶çš„è¡Œä¸ºï¼Œæ¯å¸§è°ƒç”¨
     /// </summary>
     public abstract void Update(PlayRuntimeData data);
 
     /// <summary>
-    /// ¹æ¶¨×´Ì¬ÍË³öÊ±µÄĞĞÎª£¬µ÷ÓÃÒ»´Î
+    /// è§„å®šçŠ¶æ€é€€å‡ºæ—¶çš„è¡Œä¸ºï¼Œè°ƒç”¨ä¸€æ¬¡
     /// </summary>
     public abstract void Exit();
 
-
+    
 }

@@ -1,6 +1,6 @@
 using Animancer;
 using UnityEngine;
-using UnityEngine.Rendering;
+
 public class RunState : CharacterBaseState
 {
     private CartesianMixerState _2dMixer;
@@ -13,8 +13,8 @@ public class RunState : CharacterBaseState
     {
         if (_stateData.animationType == StateData.AnimationType.Mixer2D)
         {
-            _currentAnimancerState = _animancer.Play(_stateData.mixer);
-            _2dMixer = _currentAnimancerState as CartesianMixerState; //»º´æµ±Ç°mixer
+            _currentAnimancerState = _animancer.Play(_stateData.mixer, 0.25f);
+            _2dMixer = _currentAnimancerState as CartesianMixerState;
         }
     }
 
@@ -26,7 +26,7 @@ public class RunState : CharacterBaseState
     {
         if (data.rawInput != Vector2.zero)
         {
-            if (data.wantRun ==false)
+            if (data.wantRun == false)
             {
                 _stateMachine.SwitchState(_stateMachine.MoveState);
             }
@@ -35,8 +35,5 @@ public class RunState : CharacterBaseState
         {
             _stateMachine.SwitchState(_stateMachine.IdleState);
         }
-
-
     }
-
 }

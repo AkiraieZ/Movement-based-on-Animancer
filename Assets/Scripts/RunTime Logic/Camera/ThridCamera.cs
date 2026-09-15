@@ -1,5 +1,5 @@
 /*
- ÉãÏñ»úµÄ¿ØÖÆ£¬°üÀ¨¾µÍ·ÁéÃô¶È£¬¾àÀëÈËÎïÔ¶½üÕâÀà
+ æ‘„åƒæœºçš„æ§åˆ¶ï¼ŒåŒ…æ‹¬é•œå¤´çµæ•åº¦ï¼Œè·ç¦»äººç‰©è¿œè¿‘è¿™ç±»
  */
 using Cinemachine;
 using UnityEngine;
@@ -11,7 +11,7 @@ public class ThridCamera : MonoBehaviour
     private CinemachineFramingTransposer framingTransposer;
     private CinemachinePOV pov;
 
-    [Header("ÉãÏñ»ú²ÎÊı")]
+    [Header("æ‘„åƒæœºå‚æ•°")]
     [Range(1f,10f)]public float sensitivePov = 1.0f;
     public float sensitiveDist = 1.0f;
     [Range(1f,3f)]public float minDist = 3.0f;
@@ -24,14 +24,14 @@ public class ThridCamera : MonoBehaviour
     {
         if(_camera == null)
         {
-            Debug.LogError("µÚÈıÈË³Æ×é¼şÃ»ÓĞÉèÖÃÉãÏñÍ·");
+            Debug.LogError("ç¬¬ä¸‰äººç§°ç»„ä»¶æ²¡æœ‰è®¾ç½®æ‘„åƒå¤´");
         }
 
  
         framingTransposer = _camera.GetCinemachineComponent<CinemachineFramingTransposer>();
         pov = _camera.GetCinemachineComponent<CinemachinePOV>();
 
-        //³õÊ¼ÉãÏñ»ú¾àÀë
+        //åˆå§‹æ‘„åƒæœºè·ç¦»
         currentDist = defaultDist;
     }
 
@@ -47,7 +47,7 @@ public class ThridCamera : MonoBehaviour
         }
         else
         {
-            Debug.LogError("ÉãÏñ»úÃ»ÓĞÉèÖÃPOV");
+            Debug.LogError("æ‘„åƒæœºæ²¡æœ‰è®¾ç½®POV");
         }
     }
     private void LateUpdate()
@@ -58,7 +58,7 @@ public class ThridCamera : MonoBehaviour
         }
         else
         {
-            Debug.LogError("ÉãÏñ»úÃ»ÓĞÉèÖÃFramingTransposer");
+            Debug.LogError("æ‘„åƒæœºæ²¡æœ‰è®¾ç½®FramingTransposer");
         }
     }
     private void OnEnable()
@@ -69,7 +69,7 @@ public class ThridCamera : MonoBehaviour
         }
         else
         {
-            Debug.LogError("µÚÈıÈË³Æ×é¼şÃ»ÓĞÉèÖÃÊäÈë¹ÜÏß");
+            Debug.LogError("ç¬¬ä¸‰äººç§°ç»„ä»¶æ²¡æœ‰è®¾ç½®è¾“å…¥ç®¡çº¿");
         }
     }
     private void OnDisable()
@@ -80,10 +80,10 @@ public class ThridCamera : MonoBehaviour
         }
     }
 
-    //¹öÂÖ¿ØÖÆÉãÏñ»ú¾àÀë½ÇÉ«Ô¶½ü
+    //æ»šè½®æ§åˆ¶æ‘„åƒæœºè·ç¦»è§’è‰²è¿œè¿‘
     private void ScrollHandle(Vector2 v)
     {
-        currentDist -= v.y * sensitiveDist*Time.deltaTime;//¸üĞÂ¾àÀë
-        currentDist = Mathf.Clamp(currentDist, minDist, maxDist);//ÏŞ¶¨¾àÀë
+        currentDist -= v.y * sensitiveDist*Time.deltaTime;//æ›´æ–°è·ç¦»
+        currentDist = Mathf.Clamp(currentDist, minDist, maxDist);//é™å®šè·ç¦»
     }
 }

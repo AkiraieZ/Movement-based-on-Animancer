@@ -1,25 +1,30 @@
 using Animancer;
-using UnityEditor.Rendering.Universal;
 using UnityEngine;
 
-public class IdleState :CharacterBaseState
+public class IdleState : CharacterBaseState
 {
     private CartesianMixerState _2dMixer;
+
     public IdleState(CharacterStateMachine stateMachine, AnimancerComponent animancer, StateData stateData) : base(stateMachine, animancer, stateData)
     {
-
     }
 
     public override void Enter()
     {
         if (_stateData.animationType == StateData.AnimationType.Mixer2D)
         {
-            _currentAnimancerState = _animancer.Play(_stateData.mixer);
-            _2dMixer = _currentAnimancerState as CartesianMixerState; //缓存当前mixer
+            _currentAnimancerState = _animancer.Play(_stateData.mixer, 0.25f);
+            _2dMixer = _currentAnimancerState as CartesianMixerState;
         }
     }
+
     public override void Update(PlayRuntimeData data)
     {
+        if (!data.isGrounded)
+        {
+            return;
+        }
+
         if (!data.targetLocked)
         {
             float go;
@@ -41,28 +46,20 @@ public class IdleState :CharacterBaseState
             _2dMixer.ParameterY = Mathf.Lerp(_2dMixer.ParameterY, data.rawInput.y, 3f * Time.deltaTime);
         }
 
-
-        //玩家是否想要移动
         if (data.worldMoveDir != Vector3.zero)
         {
-            //玩家想要移动
             _stateMachine.SwitchState(_stateMachine.MoveState);
             Debug.Log("Idle->Move");
         }
 
-        //是否要跳跃
-        if (data.wantJump)
+        if (data.wantJump && data.isGrounded)
         {
-            //_stateMachine.SwitchState(_stateMachine.)
+            _stateMachine.SwitchState(_stateMachine.JumpState);
         }
-
     }
 
     public override void Exit()
     {
-        //也许有需要重置的变量
         Debug.Log("Exit Idle");
     }
-
-
 }

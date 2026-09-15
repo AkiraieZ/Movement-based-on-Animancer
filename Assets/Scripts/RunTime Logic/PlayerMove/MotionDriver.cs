@@ -1,96 +1,118 @@
 /*
- ¸ù¾İµ±Ç°×´Ì¬ÊµÏÖ½ÇÉ«¸÷ÀàĞĞ¶¯,½öÒÀÀµpipelineÖĞµÄÊı¾İ
-´«µİµ±Ç°ËÙ¶Èµ½¹²ÏíÊı¾İÖĞ
+ è´Ÿè´£è§’è‰²å½“å‰çŠ¶æ€çš„ç‰©ç†ç§»åŠ¨å’Œæ—‹è½¬ï¼Œæ ¹æ®pipelineä¸­çš„æ•°æ®é©±åŠ¨è§’è‰²çš„è¿åŠ¨è¡Œä¸º
  */
 using UnityEngine;
 
-
-
 public class MotionDriver : MonoBehaviour
 {
-    [Header("×é¼ş")]
-    [SerializeField]private CharacterStateMachine charState;
-    [SerializeField]private MainProcessPipeline pipeline;
-    [SerializeField]private ThridCamera _camera;
+    [Header("ä¾èµ–")]
+    [SerializeField] private CharacterStateMachine charState;
+    [SerializeField] private MainProcessPipeline pipeline;
+    [SerializeField] private ThridCamera _camera;
 
     private Rigidbody rb;
     private PlayRuntimeData data;
 
-    //±äÁ¿
     private Vector2 moveInput;
     private Vector3 moveDir;
 
-    [Header("ÊıÖµ")]
+    [Header("å‚æ•°")]
     public float walkSpeed = 5f;
     public float runSpeed = 8f;
     public float speedLimit;
     public float currentSpeed;
     public bool wantRun;
+    public float jumpForce = 4f;
 
-    //¹²ÏíÊı¾İ
     private float blendParameter;
-      
+
     private void Awake()
     {
-        //×é¼ş»ñÈ¡
         if (charState == null)
         {
-            Debug.LogError(this + "Ã»ÓĞÌí¼ÓCharacterStateMachine");
+            Debug.LogError(this + "æ²¡æœ‰ç»‘å®šCharacterStateMachine");
         }
         if (pipeline == null)
         {
-            Debug.LogError(this + "Ã»ÓĞÌí¼ÓMainProcessPipeline");
+            Debug.LogError(this + "æ²¡æœ‰ç»‘å®šMainProcessPipeline");
         }
-        if(_camera == null)
+        if (_camera == null)
         {
-            Debug.LogError(this + "Ã»ÓĞÌí¼ÓCamera");
+            Debug.LogError(this + "æ²¡æœ‰ç»‘å®šCamera");
         }
         rb = GetComponent<Rigidbody>();
-
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
     }
+
     private void OnEnable()
     {
-      Cursor.lockState = CursorLockMode.Locked;
+        Cursor.lockState = CursorLockMode.Locked;
     }
+
     private void OnDisable()
     {
-      Cursor.lockState = CursorLockMode.None;
+        Cursor.lockState = CursorLockMode.None;
     }
 
     private void Update()
     {
-        data = pipeline.GetRuntimeData();//»ñÈ¡¹²ÏíÊı¾İ
-
-
-        moveInput = data.rawInput;//»ñÈ¡ÊäÈë
+        data = pipeline.GetRuntimeData();
+        moveInput = data.rawInput;
         wantRun = data.wantRun;
         currentSpeed = wantRun ? runSpeed : walkSpeed;
-
     }
+
     private void FixedUpdate()
     {
-        //µ÷Õû·½Ïò
+        if (data == null)
+        {
+            data = pipeline?.GetRuntimeData();
+            if (data == null) return;
+        }
         moveDir = data.worldMoveDir;
         CharFaceDir();
-        //ÊµÏÖÒÆ¶¯
         Move();
-
-        //¸üĞÂ¹²ÏíÊı¾İ
+        Jump();
         WaitDataUpdate();
     }
 
+    #region è§’è‰²ç§»åŠ¨ä¸è·³è·ƒé€»è¾‘
+
     private void Move()
     {
+        if (data.lockMovement)
+        {
+            rb.velocity = Vector3.Lerp(rb.velocity, Vector3.zero, 5f * Time.deltaTime);
+            currentSpeed = 0;
+            return;
+        }
+
         if (moveInput == Vector2.zero)
         {
-            rb.velocity = Vector3.Lerp(rb.velocity,Vector3.zero,2f*Time.deltaTime);
+            rb.velocity = Vector3.Lerp(rb.velocity, Vector3.zero, 2f * Time.deltaTime);
         }
-        rb.velocity = Vector3.Lerp(rb.velocity,currentSpeed * moveDir,3f*Time.deltaTime);
+        rb.velocity = Vector3.Lerp(rb.velocity, currentSpeed * moveDir, 3f * Time.deltaTime);
         currentSpeed = rb.velocity.magnitude;
-        //Debug.Log("½ÇÉ«¿ªÊ¼ÒÆ¶¯£¬µ±Ç°ËÙ¶È" + currentSpeed);
     }
+
+    private void Jump()
+    {
+        if (data.requestJump && data.isGrounded)
+        {
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            data.requestJump = false;
+        }
+    }
+
+    #endregion
+
     void CharFaceDir()
     {
+        if (data.lockMovement)
+        {
+            return;
+        }
+
         if (moveInput == Vector2.zero)
         {
             return;
@@ -105,8 +127,8 @@ public class MotionDriver : MonoBehaviour
         {
             transform.forward = Vector3.Lerp(transform.forward, moveDir, 0.2f);
         }
-        
     }
+
     void WaitDataUpdate()
     {
         data.currentSpeed = currentSpeed;
@@ -119,8 +141,6 @@ public class MotionDriver : MonoBehaviour
             blendParameter = 0;
         }
         data.animationBlend = blendParameter;
+        data.currentVelocity = rb.velocity;
     }
-
-
-
 }

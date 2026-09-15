@@ -80,6 +80,15 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SwitchView"",
+                    ""type"": ""Button"",
+                    ""id"": ""72c605d8-7bfb-4dd7-a4df-e4028853cb79"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -203,6 +212,17 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""action"": ""TargetLock"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""48bb98f1-7361-46f1-98cd-abadc9746194"",
+                    ""path"": ""<Keyboard>/tab"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SwitchView"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -217,6 +237,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         m_Player_Run = m_Player.FindAction("Run", throwIfNotFound: true);
         m_Player_Scroll = m_Player.FindAction("Scroll", throwIfNotFound: true);
         m_Player_TargetLock = m_Player.FindAction("TargetLock", throwIfNotFound: true);
+        m_Player_SwitchView = m_Player.FindAction("SwitchView", throwIfNotFound: true);
     }
 
     ~@PlayerInput()
@@ -289,6 +310,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Run;
     private readonly InputAction m_Player_Scroll;
     private readonly InputAction m_Player_TargetLock;
+    private readonly InputAction m_Player_SwitchView;
     public struct PlayerActions
     {
         private @PlayerInput m_Wrapper;
@@ -299,6 +321,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         public InputAction @Run => m_Wrapper.m_Player_Run;
         public InputAction @Scroll => m_Wrapper.m_Player_Scroll;
         public InputAction @TargetLock => m_Wrapper.m_Player_TargetLock;
+        public InputAction @SwitchView => m_Wrapper.m_Player_SwitchView;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -326,6 +349,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @TargetLock.started += instance.OnTargetLock;
             @TargetLock.performed += instance.OnTargetLock;
             @TargetLock.canceled += instance.OnTargetLock;
+            @SwitchView.started += instance.OnSwitchView;
+            @SwitchView.performed += instance.OnSwitchView;
+            @SwitchView.canceled += instance.OnSwitchView;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -348,6 +374,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @TargetLock.started -= instance.OnTargetLock;
             @TargetLock.performed -= instance.OnTargetLock;
             @TargetLock.canceled -= instance.OnTargetLock;
+            @SwitchView.started -= instance.OnSwitchView;
+            @SwitchView.performed -= instance.OnSwitchView;
+            @SwitchView.canceled -= instance.OnSwitchView;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -373,5 +402,6 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         void OnRun(InputAction.CallbackContext context);
         void OnScroll(InputAction.CallbackContext context);
         void OnTargetLock(InputAction.CallbackContext context);
+        void OnSwitchView(InputAction.CallbackContext context);
     }
 }

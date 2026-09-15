@@ -1,48 +1,44 @@
 /*
- ×÷Îª×´Ì¬µÄµ÷¶È»ú£¬¸ºÔğ±£´æ×´Ì¬£¬ÇĞ»»×´Ì¬£¬Ã¿Ò»Ö¡µ÷ÓÃµ±Ç°×´Ì¬µÄupdate
+ ä½œä¸ºçŠ¶æ€æœºçš„é©±åŠ¨å™¨ï¼Œè´Ÿè´£åœ¨çŠ¶æ€åˆ‡æ¢æ—¶è°ƒç”¨çŠ¶æ€çš„Enter/Exitï¼Œæ¯å¸§è°ƒç”¨å½“å‰çŠ¶æ€çš„update
  */
 using Animancer;
 using UnityEngine;
 
 public class CharacterStateMachine : MonoBehaviour
 {
-    //×é¼şµ÷ÓÃ£¬inspector´°¿Ú¸³Öµ
     [SerializeField] private AnimancerComponent animancer;
-    [SerializeField] private MainProcessPipeline pipeline; // ÓÃÀ´»ñÈ¡ PlayRuntimeData
+    [SerializeField] private MainProcessPipeline pipeline;
 
-    [Header("×´Ì¬Êı¾İ")]//»ñÈ¡¶ÔÓ¦µÄ×´Ì¬Êı¾İ
+    [Header("çŠ¶æ€é…ç½®")]
     public StateData idleData;
     public StateData moveData;
     public StateData runData;
+    public StateData JumpData;
 
-    //×´Ì¬ÊµÀı
     public IdleState IdleState { get; private set; }
     public MoveState MoveState { get; private set; }
     public RunState RunState { get; private set; }
-
+    public JumpState JumpState { get; private set; }
 
     private CharacterBaseState _currentState;
     private PlayRuntimeData _data;
 
     private void Awake()
     {
-        //³õÊ¼»¯µ±Ç°×´Ì¬
-        IdleState = new IdleState(this,animancer,idleData);
-        MoveState = new MoveState(this,animancer,moveData);
+        IdleState = new IdleState(this, animancer, idleData);
+        MoveState = new MoveState(this, animancer, moveData);
         RunState = new RunState(this, animancer, runData);
-    
+        JumpState = new JumpState(this, animancer, JumpData);
     }
+
     private void Start()
     {
-
-        //³õ´Î×´Ì¬Ó¦¸ÃÊÇIdle
         SwitchState(IdleState);
-        
     }
 
     private void Update()
     {
-        _data = pipeline.GetRuntimeData();//»ñÈ¡Êı¾İÉÏÏÂÎÄ
+        _data = pipeline.GetRuntimeData();
 
         if (_data != null)
         {
@@ -50,21 +46,18 @@ public class CharacterStateMachine : MonoBehaviour
         }
         else
         {
-            Debug.LogError("RuntimeDataÎª¿Õ");
+            Debug.LogError("RuntimeDataä¸ºç©º");
         }
-
-        Debug.Log("µ±Ç°×´Ì¬" + _currentState);
     }
 
     public void SwitchState(CharacterBaseState newState)
     {
-        //ÇåÀí¾É×´Ì¬
         _currentState?.Exit();
 
-        //¸üĞÂµ±Ç°×´Ì¬
         _currentState = newState;
 
-        //µ÷ÓÃµ±Ç°×´Ì¬Enter
         _currentState?.Enter();
     }
+
+    public PlayRuntimeData GetData() => _data;
 }

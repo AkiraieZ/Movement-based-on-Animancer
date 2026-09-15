@@ -1,25 +1,28 @@
 /*
- ×÷ÎªÏµÍ³µÄÊı¾İºÚ°å£¬´æ´¢ÔËĞĞÊ±Êı¾İ
+ ä½œä¸ºç³»ç»Ÿæ•°æ®å®¹å™¨ï¼Œå­˜å‚¨è¿è¡Œæ—¶æ•°æ®
  */
 using UnityEngine;
 public class PlayRuntimeData
 {
-    [Header("ÊäÈëÒâÍ¼")]//PipelineĞ´Èë
-    public Vector2 rawInput;//Ô­Ê¼wasd
+    [Header("è¾“å…¥æ•°æ®")]//Pipelineå†™å…¥
+    public Vector2 rawInput;//åŸå§‹wasdè¾“å…¥
     public bool isJumpPressed;
     public bool isShiftPressed;
 
-    [Header("½âÎöÒâÍ¼")]//×ÓPipeline½âÎö¼ÆËã
+    [Header("æ„å›¾æ•°æ®")]//ç”±Pipelineè§£æåå†™å…¥
     public Vector3 worldMoveDir;
-    public bool wantJump;
     public bool wantRun;
+    public bool wantJump;
 
-    [Header("ÔË¶¯×´Ì¬")]
+    [Header("çŠ¶æ€æ•°æ®")]
     public bool isGrounded;
     public float currentSpeed;
     public Vector3 currentVelocity;
     public bool targetLocked;
+    public bool turn;
+    public bool requestJump;
+    public bool lockMovement;
 
-    [Header("¶¯»­¿ØÖÆ")]
-    public float animationBlend;//»ìºÏÊ÷µÄ²ÎÊı
+    [Header("åŠ¨ç”»ç›¸å…³")]
+    public float animationBlend;//åŠ¨ç”»æ··åˆå‚æ•°
 }

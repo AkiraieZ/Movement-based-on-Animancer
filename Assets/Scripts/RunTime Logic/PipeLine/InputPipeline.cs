@@ -1,62 +1,55 @@
 /*
- 输入管线：仅处理输入
+ 杈撳叆澶勭悊娴佹按绾匡紝璐熻矗鐩戝惉鐢ㄦ埛杈撳叆
  */
 using System;
-using System.Threading;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class InputPipeline : MonoBehaviour
 {
-    //输入配置
     private PlayerInput _playerInput;
 
-    //玩家操作对应事件
     public event Action<Vector2> OnMoveInput;
     public event Action<Vector2> OnLookInput;
     public event Action OnJumpInput;
     public event Action<bool> OnRunInput;
     public event Action<Vector2> OnScrollInput;
     public event Action<bool> OnTargetLockedInput;
+    public event Action OnSwitchViewInput;
 
-    #region 生命周期
+    #region 鐢熷懡鍛ㄦ湡
     private void Awake()
     {
-        // 实例化生成的输入类（绑定所有Action）
         _playerInput = new PlayerInput();
     }
+
     private void Update()
     {
     }
 
     private void OnEnable()
     {
-        //启动输入
         _playerInput.Enable();
 
-        //在按下和抬起的时候都调用一次
         _playerInput.Player.Move.performed += OnMoveHandle;
         _playerInput.Player.Move.canceled += OnMoveHandle;
 
-        //look
         _playerInput.Player.Look.performed += OnLookHandle;
 
-        //仅按下的时候触发跳跃
         _playerInput.Player.Jump.performed += OnJumpHandle;
-
 
         _playerInput.Player.Run.performed += OnRunHandle;
         _playerInput.Player.Run.canceled += OnRunHandle;
 
         _playerInput.Player.Scroll.performed += OnScrollHandle;
 
-        //cameraLock，视角锁定
         _playerInput.Player.TargetLock.started += OnTargetLockedHandle;
+
+        _playerInput.Player.SwitchView.started += OnSwitchViewHandle;
     }
 
     private void OnDisable()
     {
-        // 注销事件
         _playerInput.Player.Move.performed -= OnMoveHandle;
         _playerInput.Player.Move.canceled -= OnMoveHandle;
 
@@ -71,15 +64,13 @@ public class InputPipeline : MonoBehaviour
 
         _playerInput.Player.TargetLock.started -= OnTargetLockedHandle;
 
+        _playerInput.Player.SwitchView.started -= OnSwitchViewHandle;
 
-        // 禁用输入图
         _playerInput.Disable();
     }
-
-
     #endregion
 
-    #region 输入回调
+    #region 鍥炶皟澶勭悊
     private void OnMoveHandle(InputAction.CallbackContext context)
     {
         OnMoveInput?.Invoke(context.ReadValue<Vector2>());
@@ -108,6 +99,11 @@ public class InputPipeline : MonoBehaviour
     private void OnTargetLockedHandle(InputAction.CallbackContext context)
     {
         OnTargetLockedInput?.Invoke(context.started);
+    }
+
+    private void OnSwitchViewHandle(InputAction.CallbackContext context)
+    {
+        OnSwitchViewInput?.Invoke();
     }
     #endregion
 }

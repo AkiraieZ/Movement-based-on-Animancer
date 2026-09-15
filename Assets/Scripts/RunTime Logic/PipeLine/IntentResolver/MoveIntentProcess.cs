@@ -1,20 +1,20 @@
 /*
- ÒÆ¶¯ÒâÍ¼½âÎö½ø³Ì
+ ç§»åŠ¨æ„å›¾è§£æè¿›ç¨‹
  */
 using UnityEngine;
 
 public class MoveIntentProcess
 {
-    private ThridCamera _camera;//µÚÈıÈË³ÆÉãÏñÍ·
+    private ThridCamera _camera;//ç¬¬ä¸‰äººç§°æ‘„åƒå¤´
 
     public MoveIntentProcess(ThridCamera camera) =>_camera = camera;
 
     /// <summary>
-    /// ×÷Îª½Ó¿Ú£¬±»µ÷ÓÃÊ±ÓÃÀ´½âÎöÒÆ¶¯ÒâÍ¼
+    /// ä½œä¸ºæ¥å£ï¼Œè¢«è°ƒç”¨æ—¶ç”¨æ¥è§£æç§»åŠ¨æ„å›¾
     /// </summary>
     public void ProcessIntent(PlayRuntimeData data)
     {
-        //»ñÈ¡µ±Ç°ÉãÏñ»úÃæ³¯·½Ïò
+        //è·å–å½“å‰æ‘„åƒæœºé¢æœæ–¹å‘
         Vector3 forward = _camera.transform.forward;
         Vector3 right = _camera.transform.right;
         forward.y = 0;
@@ -22,7 +22,10 @@ public class MoveIntentProcess
         forward.Normalize();
         right.Normalize();
 
-        data.worldMoveDir = (forward * data.rawInput.y + right * data.rawInput.x).normalized;//Èç¹û´óÓÚ0,¾Í´æÔÚÇ°½øÒâÍ¼
+        data.worldMoveDir = (forward * data.rawInput.y + right * data.rawInput.x).normalized;//å¦‚æœå¤§äº0,å°±å­˜åœ¨å‰è¿›æ„å›¾
         data.wantRun = data.isShiftPressed;
+        data.wantJump = data.isJumpPressed;
+        
+        data.isJumpPressed = false;
     }
 }

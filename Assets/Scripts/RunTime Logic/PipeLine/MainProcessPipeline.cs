@@ -1,71 +1,75 @@
 /*
- ×÷Îªµ÷¶ÈÕß¹ÜÀí×Ópipeline,²¢ÇÒ¸ºÔğ½«¶ÔÓ¦Êı¾İĞ´ÈëÊı¾İºÚ°åPlayRuntimeDataÖĞ£¬Ìá¹©½Ó¿ÚÈÃÆäËûÄ£¿éÀ´¶ÁÈ¡¹²ÏíÊı¾İ
+ ä½œä¸ºæ¸¸æˆçš„ä¸»å¤„ç†pipelineï¼Œè´Ÿè´£æ¥æ”¶æ¥è‡ªè¾“å…¥ç³»ç»Ÿçš„æ•°æ®ï¼Œæ±‡æ€»åˆ°PlayRuntimeDataä¸­ï¼Œå¯¹å¤–æä¾›æ¥å£ç»™å„æ¨¡å—è¯»å–è¿è¡Œæ—¶æ•°æ®
  */
 using UnityEngine;
+
 public class MainProcessPipeline : MonoBehaviour
 {
-    [SerializeField]private InputPipeline inputPipe;//ÊäÈë¹ÜÏß
-    [SerializeField]private ThridCamera thridCamera;//µÚÈıÈË³ÆÉãÏñ»ú
+    [SerializeField] private InputPipeline inputPipe;
+    [SerializeField] private ThridCamera thridCamera;
 
     private PlayRuntimeData data;
 
-    //Ïà¹ØĞĞÎªÒâÍ¼½âÎöÆ÷
-    private MoveIntentProcess moveIntentPrecess;//ÒÆ¶¯ÒâÍ¼½âÎö
+    private MoveIntentProcess moveIntentPrecess;
 
-    //ÁÙÊ±´æ´¢
     private bool _isTargetLocked = false;
 
     private void Awake()
     {
         data = new PlayRuntimeData();
-
         moveIntentPrecess = new MoveIntentProcess(thridCamera);
     }
 
     private void Start()
     {
         Debug.Log("Run MainPipeline");
-
     }
+
     private void Update()
     {
-        //½â¶ÁĞĞÎªÒâÍ¼
         moveIntentPrecess.ProcessIntent(data);
     }
+
     private void OnEnable()
     {
-        // ¶©ÔÄÊäÈë¹ÜÏßÊÂ¼ş
-        inputPipe.OnMoveInput += (v) => data.rawInput = v;
-        inputPipe.OnJumpInput += () => data.isJumpPressed = true;
-        inputPipe.OnRunInput += (isPressing) => data.isShiftPressed = isPressing;
-        inputPipe.OnTargetLockedInput += (pressed) => {
-            // Ö»ÔÚ°´¼ü°´ÏÂµÄË²¼äÇĞ»»
-            if (pressed)
-            {
-                _isTargetLocked = !_isTargetLocked;  // ÇĞ»»×´Ì¬
-                data.targetLocked = _isTargetLocked;
-
-                Debug.Log($"Ëø¶¨×´Ì¬ÇĞ»»Îª: {_isTargetLocked}");
-            }
-        };
+        inputPipe.OnMoveInput += HandleMoveInput;
+        inputPipe.OnJumpInput += HandleJumpInput;
+        inputPipe.OnRunInput += HandleRunInput;
+        inputPipe.OnTargetLockedInput += HandleTargetLockedInput;
     }
 
     private void OnDisable()
     {
-        // ×¢ÏúÊÂ¼ş
-        inputPipe.OnMoveInput -= (v) => data.rawInput = v;
-        inputPipe.OnJumpInput -= () => data.isJumpPressed = true;
-        inputPipe.OnRunInput -= (isPressing) => data.isShiftPressed = isPressing;
-        inputPipe.OnTargetLockedInput -= (pressed) => {
-            // Ö»ÔÚ°´¼ü°´ÏÂµÄË²¼äÇĞ»»
-            if (pressed)
-            {
-                _isTargetLocked = !_isTargetLocked;  // ÇĞ»»×´Ì¬
-                data.targetLocked = _isTargetLocked;
-
-                Debug.Log($"Ëø¶¨×´Ì¬ÇĞ»»Îª: {_isTargetLocked}");
-            }
-        };
+        inputPipe.OnMoveInput -= HandleMoveInput;
+        inputPipe.OnJumpInput -= HandleJumpInput;
+        inputPipe.OnRunInput -= HandleRunInput;
+        inputPipe.OnTargetLockedInput -= HandleTargetLockedInput;
     }
+
+    private void HandleMoveInput(Vector2 v)
+    {
+        data.rawInput = v;
+    }
+
+    private void HandleJumpInput()
+    {
+        data.isJumpPressed = true;
+    }
+
+    private void HandleRunInput(bool isPressing)
+    {
+        data.isShiftPressed = isPressing;
+    }
+
+    private void HandleTargetLockedInput(bool pressed)
+    {
+        if (pressed)
+        {
+            _isTargetLocked = !_isTargetLocked;
+            data.targetLocked = _isTargetLocked;
+            Debug.Log($"é”å®šçŠ¶æ€åˆ‡æ¢ä¸º: {_isTargetLocked}");
+        }
+    }
+
     public PlayRuntimeData GetRuntimeData() => data;
 }
