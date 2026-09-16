@@ -56,6 +56,12 @@ public class NetworkGameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 命令行参数检测。与 Awake 无关的纯静态入口，prefab 内的组件可安全调用（阶段 3 起用于 -net-debug）。
+    /// </summary>
+    public static bool HasCommandLineArg(string arg)
+        => ContainsArg(Environment.GetCommandLineArgs(), arg);
+
     private static bool ContainsArg(string[] args, string arg)
     {
         for (int i = 0; i < args.Length; i++)

@@ -60,4 +60,10 @@ public class CharacterStateMachine : MonoBehaviour
     }
 
     public PlayRuntimeData GetData() => _data;
+
+    /// <summary>
+    /// 是否已执行过 Start（即是否已进入初始 IdleState）。
+    /// 阶段 3/4 用它判断远端木偶的动画时间线是否干净（没有被本地状态机抢占过）。
+    /// </summary>
+    public bool HasStarted => _currentState != null;
 }

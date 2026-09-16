@@ -54,4 +54,12 @@ public class DimensionCameraController : MonoBehaviour
         if (_2dCam != null) _2dCam.SetActive(switched);
         if (_3dCam != null) _3dCam.SetActive(!switched);
     }
+
+    /// <summary>
+    /// 按当前 switched 状态重新应用相机组开关（供 NetworkPlayerController 的所有权门控复用，阶段 3）。
+    /// 不改动任何原有逻辑：ApplySwitch 仍是唯一实现。
+    /// 说明：MVP 下 Owner 分支调用它是冗余的（prefab 里本组件 m_Enabled=1，OnEnable 已把 3D 打开），
+    /// 保留它只是让"门控"成为相机状态的唯一权威入口，为将来的所有权转移/启用重入留一个明确入口。
+    /// </summary>
+    public void ApplyCurrentView() => ApplySwitch();
 }

@@ -44,15 +44,8 @@ public class MotionDriver : MonoBehaviour
         rb.constraints = RigidbodyConstraints.FreezeRotation;
     }
 
-    private void OnEnable()
-    {
-        Cursor.lockState = CursorLockMode.Locked;
-    }
-
-    private void OnDisable()
-    {
-        Cursor.lockState = CursorLockMode.None;
-    }
+    // 阶段 3：光标锁已迁移到 NetworkPlayerController（按 Owner + 窗口焦点统一管理，另加 Esc 解锁），
+    // 本类不再碰 Cursor，避免"禁用远端 MotionDriver 触发 OnDisable 解锁本机光标"的竞态。
 
     private void Update()
     {
