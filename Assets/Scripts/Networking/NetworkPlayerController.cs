@@ -11,6 +11,11 @@
       让每台机器只有本地玩家的 vcam 生效；
    4. 光标锁统一管理：按 Owner + 窗口焦点锁/解锁，Esc 解锁、再按锁回，OnDisable 兜底释放；
    5. 诊断日志（-net-debug 门控）：spawn / focus / 1Hz 相机快照，供打包端取证。
+
+ 阶段 4（本版新增）：
+   6. 状态与动画同步门控：Owner 端启用 NetworkStateSync（写同步变量），
+      非 Owner 端启用 NetworkAnimationPresenter（用同步变量驱动木偶 Animancer）；
+   7. spawn 诊断行补充 syncEnabled / presenterEnabled 两个字段。
  */
 using Cinemachine;
 using Unity.Netcode;
@@ -32,6 +37,10 @@ public class NetworkPlayerController : NetworkBehaviour
 
     [Header("物理")]
     [SerializeField] private Rigidbody playerRigidbody;
+
+    [Header("阶段 4：状态与动画同步")]
+    [SerializeField] private NetworkStateSync networkStateSync;
+    [SerializeField] private NetworkAnimationPresenter animationPresenter;
 
     private bool _isLocalOwner;
     private bool _netDebug;
@@ -137,6 +146,10 @@ public class NetworkPlayerController : NetworkBehaviour
             if (dimensionCameraController != null) dimensionCameraController.enabled = false;
             if (camera3D != null) camera3D.SetActive(false);
             if (camera2D != null) camera2D.SetActive(false);
+
+            // 阶段 4：木偶的动画表现层接管；同步变量只由 Owner 写
+            if (networkStateSync != null) networkStateSync.enabled = false;
+            if (animationPresenter != null) animationPresenter.enabled = true;
         }
         else
         {
@@ -147,6 +160,10 @@ public class NetworkPlayerController : NetworkBehaviour
                 dimensionCameraController.enabled = true;
                 dimensionCameraController.ApplyCurrentView();
             }
+
+            // 阶段 4：本地玩家的动画由状态机自己驱动，同步变量由本端写
+            if (networkStateSync != null) networkStateSync.enabled = true;
+            if (animationPresenter != null) animationPresenter.enabled = false;
 
             ApplyCursorLock(Application.isFocused);
         }
@@ -170,6 +187,7 @@ public class NetworkPlayerController : NetworkBehaviour
         Debug.Log($"[NetDbg][spawn] owner={OwnerClientId} isOwner={IsOwner} " +
                   $"cam3D={ActiveSelf(camera3D)} cam2D={ActiveSelf(camera2D)} dcamEnabled={EnabledState(dimensionCameraController)} " +
                   $"kinematic={kinematic} stateStartRan={stateStartRan} " +
+                  $"syncEnabled={EnabledState(networkStateSync)} presenterEnabled={EnabledState(animationPresenter)} " +
                   $"cursor={Cursor.lockState} root={transform.position.ToString("F3")}");
     }
 

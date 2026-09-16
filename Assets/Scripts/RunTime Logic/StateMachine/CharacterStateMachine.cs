@@ -20,6 +20,21 @@ public class CharacterStateMachine : MonoBehaviour
     public RunState RunState { get; private set; }
     public JumpState JumpState { get; private set; }
 
+    /// <summary>
+    /// 阶段 4：供网络同步读取的状态标识（RunState 从未被切换进入，不占编号）。
+    /// </summary>
+    public enum StateId : byte
+    {
+        Idle = 0,
+        Move = 1,
+        Jump = 2,
+    }
+
+    /// <summary>
+    /// 阶段 4：当前状态标识。默认 Idle，正好覆盖"spawn 帧还没跑 Start"的窗口。
+    /// </summary>
+    public StateId CurrentStateId { get; private set; }
+
     private CharacterBaseState _currentState;
     private PlayRuntimeData _data;
 
@@ -57,6 +72,11 @@ public class CharacterStateMachine : MonoBehaviour
         _currentState = newState;
 
         _currentState?.Enter();
+
+        // 阶段 4 新增：只记录标识，不改变任何状态切换行为（由 NetworkStateSync 采样）
+        CurrentStateId = newState == JumpState ? StateId.Jump
+                       : newState == MoveState ? StateId.Move
+                       : StateId.Idle;
     }
 
     public PlayRuntimeData GetData() => _data;
