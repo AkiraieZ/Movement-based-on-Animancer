@@ -11,6 +11,16 @@ public class JumpState : CharacterBaseState
 
     private JumpSubState _subState;
 
+    /// <summary>
+    /// 起跳后是否真的离开过地面。
+    /// 这是"落地"的唯一前置条件：起跳那一两帧角色仍然贴地（冲量还没把它抬起来），
+    /// 只有先确认离地，之后再贴地才算落地。
+    /// </summary>
+    private bool _hasLeftGround;
+
+    private float _enterTime;
+    private float _leftGroundTime;
+
     private AnimationClip enter_Jump;
     private AnimationClip landed_Jump;
 
@@ -36,7 +46,7 @@ public class JumpState : CharacterBaseState
             return;
         }
 
-        _animancer.Play(enter_Jump, 0.15f);
+        _animancer.Play(enter_Jump, _stateMachine.JumpEnterFade);
 
         var data = _stateMachine.GetData();
         if (data != null)
@@ -45,26 +55,44 @@ public class JumpState : CharacterBaseState
         }
 
         _subState = JumpSubState.Airborne;
+        _hasLeftGround = false;
+        _enterTime = Time.time;
         Debug.Log("Jump Start (Airborne)");
     }
 
     public override void Update(PlayRuntimeData data)
     {
-        var currentAnimState = _animancer.States.Current;
+        CharacterStateMachine sm = _stateMachine;
 
         switch (_subState)
         {
             case JumpSubState.Airborne:
-                if (currentAnimState != null && currentAnimState.NormalizedTime < 0.3f)
+                // 1) 离地中：记录离地事实与时刻，等待触地
+                if (!data.isGrounded)
                 {
+                    if (!_hasLeftGround)
+                    {
+                        _hasLeftGround = true;
+                        _leftGroundTime = Time.time;
+                    }
                     return;
                 }
 
-                if (data.isGrounded)
+                // 2) 贴地但还没离过地：起跳帧的常态，继续等（仅超时兜底）
+                if (!_hasLeftGround)
                 {
-                    _animancer.Play(landed_Jump, 0.25f);
-                    _subState = JumpSubState.Landing;
-                    Debug.Log("Jump -> Landing Buffer");
+                    if (Time.time - _enterTime >= sm.JumpAirborneTimeout)
+                    {
+                        EnterLanding();
+                    }
+                    return;
+                }
+
+                // 3) 离过地之后再次贴地 = 落地。最小滞空时间只用于过滤接触抖动
+                if (Time.time - _leftGroundTime >= sm.JumpMinAirborne
+                    || Time.time - _enterTime >= sm.JumpAirborneTimeout)
+                {
+                    EnterLanding();
                 }
                 break;
 
@@ -78,13 +106,21 @@ public class JumpState : CharacterBaseState
 
                 data.lockMovement = true;
 
-                if (currentAnimState != null && currentAnimState.NormalizedTime >= 1f)
+                var landAnimState = _animancer.States.Current;
+                if (landAnimState != null && landAnimState.NormalizedTime >= 1f)
                 {
                     data.lockMovement = false;
                     _stateMachine.SwitchState(_stateMachine.IdleState);
                 }
                 break;
         }
+    }
+
+    private void EnterLanding()
+    {
+        _animancer.Play(landed_Jump, _stateMachine.JumpLandFade);
+        _subState = JumpSubState.Landing;
+        Debug.Log("Jump -> Landing Buffer");
     }
 
     public override void Exit()
@@ -94,6 +130,7 @@ public class JumpState : CharacterBaseState
         {
             data.lockMovement = false;
         }
+        _hasLeftGround = false;
         Debug.Log("Jump Exit");
     }
 }

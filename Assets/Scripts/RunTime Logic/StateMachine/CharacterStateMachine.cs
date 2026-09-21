@@ -15,6 +15,21 @@ public class CharacterStateMachine : MonoBehaviour
     public StateData runData;
     public StateData JumpData;
 
+    [Header("跳跃时序（秒）")]
+    [Tooltip("起跳片段淡入时长")]
+    [SerializeField] private float jumpEnterFade = 0.15f;
+    [Tooltip("落地片段淡入时长。越小越干脆、越大越平滑——落地瞬间的观感主要靠它调")]
+    [SerializeField] private float jumpLandFade = 0.15f;
+    [Tooltip("最小滞空时间（防抖地板）：离地后至少经过这么久，再次贴地才算落地，用来过滤起跳/贴坡时的接触抖动")]
+    [SerializeField] private float jumpMinAirborne = 0.1f;
+    [Tooltip("安全网：起跳后超过该时长仍未判定落地，只要贴地就强制按落地处理，避免卡在跳跃状态")]
+    [SerializeField] private float jumpAirborneTimeout = 3f;
+
+    public float JumpEnterFade => jumpEnterFade;
+    public float JumpLandFade => jumpLandFade;
+    public float JumpMinAirborne => jumpMinAirborne;
+    public float JumpAirborneTimeout => jumpAirborneTimeout;
+
     public IdleState IdleState { get; private set; }
     public MoveState MoveState { get; private set; }
     public RunState RunState { get; private set; }

@@ -7,13 +7,15 @@
    2. 只用 Play() 的返回值缓存状态，禁止读 Transition.State（资产级全局缓存，见 NetworkStateSync 注释）；
    3. 不自行判定 Landing 的退出：本地一切换状态，AnimationState 就变，这里跟着切，
       不做第二套状态机（否则必然与本地分叉）；
-   4. Play 的淡入参数与本地逐字一致：起跳 0.15f、落地 0.25f、站立/行走 0.25f。
+   4. Play 的淡入参数与本地一致：起跳/落地取 CharacterStateMachine 上的跳跃时序参数
+      （JumpEnterFade / JumpLandFade，Inspector 可调），站立/行走固定 0.25f。
 
  与本地状态机的对应关系：
    IdleState.Enter   → Play(idleData.mixer, 0.25f)  + 每帧写 ParameterX/Y
    MoveState.Enter   → Play(moveData.mixer, 0.25f)  + 每帧写 ParameterX/Y 与 LinearMixerState.Parameter
-   JumpState.Enter   → Play(JumpData.clipList[0], 0.15f)
-   JumpState 落地     → Play(JumpData.clipList[1], 0.25f)（前置闸门 NormalizedTime >= 0.3f）
+   JumpState.Enter   → Play(JumpData.clipList[0], JumpEnterFade)
+   JumpState 落地     → Play(JumpData.clipList[1], JumpLandFade)
+                       （前置条件：离过地 + 最小滞空时间，与 JumpState.Update 同款）
  */
 using Animancer;
 using Unity.Netcode;
@@ -36,6 +38,11 @@ public class NetworkAnimationPresenter : NetworkBehaviour
     private CartesianMixerState _mixer;
     private AnimancerState _jumpState;
     private JumpPhase _jumpPhase;
+
+    // 与 JumpState 同款的"离地锁存"：只有先确认木偶离过地，之后再贴地才当作落地。
+    private bool _hasLeftGround;
+    private float _jumpEnterTime;
+    private float _leftGroundTime;
 
     // 哨兵值：保证 spawn 后第一次 Update 必走一次 ApplyState（不依赖 spawn 消息里变量的到位时机）
     private byte _appliedState = byte.MaxValue;
@@ -96,8 +103,10 @@ public class NetworkAnimationPresenter : NetworkBehaviour
             }
 
             _mixer = null;
-            _jumpState = animancer.Play(jumpData.clipList[0], 0.15f);
+            _jumpState = animancer.Play(jumpData.clipList[0], characterStateMachine.JumpEnterFade);
             _jumpPhase = JumpPhase.Airborne;
+            _hasLeftGround = false;
+            _jumpEnterTime = Time.time;
             return;
         }
 
@@ -137,20 +146,41 @@ public class NetworkAnimationPresenter : NetworkBehaviour
         }
     }
 
-    /// <summary>跳跃期：起跳片段播到 0.3 之后且已离地，才切落地片段（与 JumpState.Update 同款闸门）。</summary>
+    /// <summary>
+    /// 跳跃期：与 JumpState.Update 同款判据——先确认离过地，之后同步到 IsGrounded=true 就切落地片段。
+    /// 不再用"起跳片段 NormalizedTime &gt;= 0.3"当闸门（起跳片段 5s，那等于 1.5s 的死等）。
+    /// </summary>
     private void UpdateJump()
     {
         if (_jumpPhase != JumpPhase.Airborne || _jumpState == null) return;
 
-        // 进入 Jump 时本地往往仍处于贴地帧，IsGrounded 的网络延迟会让远端一进 Jump 就播落地动画，
-        // 所以必须先等起跳片段走过 0.3（JumpState.cs:58 的同一判据）。
-        if (_jumpState.NormalizedTime < 0.3f) return;
-        if (!stateSync.IsGrounded.Value) return;
+        bool grounded = stateSync.IsGrounded.Value;
+
+        if (!grounded)
+        {
+            if (!_hasLeftGround)
+            {
+                _hasLeftGround = true;
+                _leftGroundTime = Time.time;
+            }
+            return;
+        }
+
+        // 还没离过地（刚进 Jump 的贴地帧）：继续等，仅超时兜底
+        if (!_hasLeftGround)
+        {
+            if (Time.time - _jumpEnterTime < characterStateMachine.JumpAirborneTimeout) return;
+        }
+        else if (Time.time - _leftGroundTime < characterStateMachine.JumpMinAirborne
+                 && Time.time - _jumpEnterTime < characterStateMachine.JumpAirborneTimeout)
+        {
+            return;
+        }
 
         StateData jumpData = characterStateMachine.JumpData;
         if (jumpData == null || jumpData.clipList == null || jumpData.clipList.Count < 2) return;
 
-        _jumpState = animancer.Play(jumpData.clipList[1], 0.25f);
+        _jumpState = animancer.Play(jumpData.clipList[1], characterStateMachine.JumpLandFade);
         _jumpPhase = JumpPhase.Landing;
     }
 
